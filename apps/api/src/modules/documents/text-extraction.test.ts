@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chunkText, extractTextFromFile } from "./text-extraction";
+import { assertSupportedDocumentFile, chunkText, extractTextFromFile } from "./text-extraction";
 
 describe("extractTextFromFile", () => {
   it("extracts text from Markdown files", async () => {
@@ -29,6 +29,11 @@ describe("extractTextFromFile", () => {
       contentType: "application/json"
     })).rejects.toThrow("Unsupported file type");
   });
+
+  it("validates supported file metadata before background ingestion", () => {
+    expect(() => assertSupportedDocumentFile({ filename: "support.md", contentType: "application/octet-stream" })).not.toThrow();
+    expect(() => assertSupportedDocumentFile({ filename: "support.json", contentType: "application/json" })).toThrow("Unsupported file type");
+  });
 });
 
 describe("chunkText", () => {
@@ -49,4 +54,3 @@ describe("chunkText", () => {
     expect(chunkText(" \n\n ")).toEqual([]);
   });
 });
-

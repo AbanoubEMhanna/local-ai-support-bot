@@ -25,6 +25,24 @@ export async function extractTextFromFile(input: {
   throw new Error("Unsupported file type. Upload .txt, .md, or .pdf files.");
 }
 
+export function assertSupportedDocumentFile(input: { filename: string; contentType: string }): void {
+  const filename = input.filename.toLowerCase();
+  const contentType = input.contentType.toLowerCase();
+
+  if (
+    contentType.includes("pdf") ||
+    contentType.startsWith("text/") ||
+    contentType.includes("markdown") ||
+    filename.endsWith(".pdf") ||
+    filename.endsWith(".md") ||
+    filename.endsWith(".txt")
+  ) {
+    return;
+  }
+
+  throw new Error("Unsupported file type. Upload .txt, .md, or .pdf files.");
+}
+
 export function chunkText(text: string, maxChars = 1200, overlapChars = 160): Array<{ content: string; chunkIndex: number; tokenCount: number }> {
   const normalized = normalizeText(text);
   if (!normalized) {
@@ -81,4 +99,3 @@ function normalizeText(text: string): string {
 function estimateTokenCount(text: string): number {
   return Math.ceil(text.split(/\s+/).filter(Boolean).length * 1.3);
 }
-

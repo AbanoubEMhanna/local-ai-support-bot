@@ -9,22 +9,25 @@ import {
   listDocumentChunks,
   listSupportDocuments,
   replaceDocumentChunks,
-  updateDocumentIngestionState
+  updateDocumentIngestionState,
+  updateSupportDocumentStoragePath
 } from "@local-ai-support-bot/db";
 import type { GetDocumentChunksResponse, ListDocumentsResponse, SupportDocument, UploadDocumentResponse } from "@local-ai-support-bot/shared";
-import { chunkText, extractTextFromFile } from "./text-extraction";
+import { DocumentIngestionQueue } from "./document-ingestion.queue";
+import { assertSupportedDocumentFile, chunkText, extractTextFromFile } from "./text-extraction";
 
 @Injectable()
 export class DocumentsService {
   private readonly storageDir = process.env.STORAGE_DIR ? resolve(process.env.STORAGE_DIR) : resolve(process.cwd(), "../..", "storage");
+
+  constructor(private readonly ingestionQueue: DocumentIngestionQueue) {}
 
   async upload(file: Express.Multer.File, title?: string): Promise<UploadDocumentResponse> {
     if (!file) {
       throw new Error("file is required");
     }
 
-    const extractedText = await extractTextFromFile({
-      buffer: file.buffer,
+    assertSupportedDocumentFile({
       filename: file.originalname,
       contentType: file.mimetype || "application/octet-stream"
     });
@@ -35,20 +38,14 @@ export class DocumentsService {
       contentType: file.mimetype || "application/octet-stream",
       storagePath: "",
       sizeBytes: file.size,
-      rawText: extractedText
+      rawText: undefined
     });
     const storagePath = await this.writeDocumentFile(document.id, file.originalname, file.buffer);
 
-    await updateDocumentIngestionState({
-      documentId: document.id,
-      status: "UPLOADED",
-      rawText: extractedText,
-      errorMessage: null
-    });
+    await updateSupportDocumentStoragePath({ documentId: document.id, storagePath });
+    await this.ingestionQueue.enqueueDocumentIngestion(document.id, "upload");
 
-    await this.setStoragePath(document.id, storagePath);
-    const ingested = await this.ingest(document.id);
-    return { document: this.toPublicDocument(ingested) };
+    return { document: this.toPublicDocument(await this.get(document.id)) };
   }
 
   async list(): Promise<ListDocumentsResponse> {
@@ -81,37 +78,51 @@ export class DocumentsService {
   }
 
   async ingest(id: string): Promise<SupportDocument> {
+    await this.get(id);
+    await updateDocumentIngestionState({ documentId: id, status: "UPLOADED", errorMessage: null });
+    await this.ingestionQueue.enqueueDocumentIngestion(id, "manual");
+    return this.get(id);
+  }
+
+  async processIngestion(id: string, reportProgress?: (progress: number) => Promise<unknown>): Promise<SupportDocument> {
     const document = await getSupportDocument(id);
     if (!document) {
       throw new NotFoundException("Document not found");
     }
 
     await updateDocumentIngestionState({ documentId: id, status: "INGESTING", errorMessage: null });
+    await reportProgress?.(5);
 
     try {
       const text = document.rawText || await this.extractFromStoredDocument(document);
+      await reportProgress?.(20);
+
       const chunks = chunkText(text);
       if (chunks.length === 0) {
         throw new Error("Document did not contain readable text");
       }
+      await reportProgress?.(35);
 
       const aiConfig = loadAiConfig();
       const aiClient = createAiClient(aiConfig);
       const embeddedChunks = [];
 
-      for (const chunk of chunks) {
+      for (const [index, chunk] of chunks.entries()) {
         const embedding = await aiClient.generateEmbedding(chunk.content);
         embeddedChunks.push({
           ...chunk,
           embedding: embedding.embedding
         });
+        await reportProgress?.(35 + Math.round(((index + 1) / chunks.length) * 50));
       }
 
       await replaceDocumentChunks({ documentId: id, chunks: embeddedChunks });
       await updateDocumentIngestionState({ documentId: id, status: "READY", rawText: text, errorMessage: null });
+      await reportProgress?.(100);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown ingestion error";
       await updateDocumentIngestionState({ documentId: id, status: "FAILED", errorMessage: message });
+      throw error;
     }
 
     return this.get(id);
@@ -132,14 +143,6 @@ export class DocumentsService {
     const storagePath = join(documentsDir, `${documentId}${extname(filename) || ".txt"}`);
     await writeFile(storagePath, buffer);
     return storagePath;
-  }
-
-  private async setStoragePath(documentId: string, storagePath: string): Promise<void> {
-    const { getPrismaClient } = await import("@local-ai-support-bot/db");
-    await getPrismaClient().document.update({
-      where: { id: documentId },
-      data: { storagePath }
-    });
   }
 
   private toPublicDocument(document: SupportDocument): SupportDocument {
