@@ -191,6 +191,17 @@ export async function updateDocumentIngestionState(input: {
   });
 }
 
+export async function updateSupportDocumentStoragePath(input: {
+  documentId: string;
+  storagePath: string;
+}): Promise<void> {
+  const prisma = getPrismaClient();
+  await prisma.document.update({
+    where: { id: input.documentId },
+    data: { storagePath: input.storagePath }
+  });
+}
+
 export async function replaceDocumentChunks(input: {
   documentId: string;
   chunks: Array<{

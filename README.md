@@ -30,7 +30,7 @@ The app now has a working local RAG MVP:
 - `/health` endpoint for runtime config.
 - `/ai/chat` endpoint for local model chat through Ollama or LM Studio.
 - Document upload for `.txt`, `.md`, and `.pdf`.
-- Local text extraction, chunking, embeddings, and pgvector storage.
+- BullMQ background ingestion for text extraction, chunking, embeddings, and pgvector storage.
 - RAG chat endpoint with citations.
 - Conversation history persistence.
 - AI metrics endpoint.
@@ -76,6 +76,9 @@ AI_CHAT_MODEL=llama3.1:8b
 AI_EMBEDDING_MODEL=llama3.1:8b
 OLLAMA_BASE_URL=http://localhost:11434
 LM_STUDIO_BASE_URL=http://localhost:1234/v1
+REDIS_URL=redis://localhost:6379
+INGESTION_QUEUE_ENABLED=true
+INGESTION_WORKER_CONCURRENCY=1
 ```
 
 ## Getting Started
@@ -119,7 +122,7 @@ Open:
 
 Before sending a chat request, make sure either Ollama or LM Studio is running locally and the configured model is available.
 
-Try the demo document:
+Try the demo document. Upload returns immediately with status `UPLOADED`; the API worker then processes extraction, chunking, local embeddings, and pgvector storage in the background.
 
 ```bash
 curl -F "title=Demo Support Knowledge Base" \
@@ -127,7 +130,7 @@ curl -F "title=Demo Support Knowledge Base" \
   http://localhost:4000/documents/upload
 ```
 
-Then ask:
+Poll `GET /documents` until the document status is `READY`, then ask:
 
 ```bash
 curl http://localhost:4000/chat \
@@ -149,6 +152,16 @@ curl http://localhost:4000/chat \
 - `pnpm infra:up`: start local PostgreSQL + Redis.
 - `pnpm infra:down`: stop local infrastructure.
 - `pnpm db:generate`: generate Prisma client.
+
+## Background Ingestion
+
+Document ingestion runs through BullMQ and Redis:
+
+- `POST /documents/upload` saves the file locally and queues ingestion.
+- The API worker extracts text, chunks content, calls the configured local embedding provider, and writes vectors to pgvector.
+- `POST /documents/:id/ingest` queues re-ingestion for an existing document.
+- Document status moves through `UPLOADED`, `INGESTING`, `READY`, or `FAILED`.
+- Tests disable the queue worker and mock AI calls, so CI does not require Redis, Ollama, or LM Studio.
 
 ## Testing and CI
 
@@ -174,7 +187,7 @@ Tests mock AI network calls where needed, so CI does not require Ollama, LM Stud
 - Phase 1: Scaffold Next.js, NestJS, PostgreSQL, pgvector, Redis. Done.
 - Phase 2: Implement document upload, parsing, chunking, and embeddings. Done.
 - Phase 3: Add RAG chat with citations and conversation history. Done.
-- Phase 4: Add background ingestion jobs, auth, workspaces, RBAC, and evaluation datasets.
+- Phase 4: Add ingestion progress UI, auth, workspaces, RBAC, and evaluation datasets.
 
 ## Repository Status
 

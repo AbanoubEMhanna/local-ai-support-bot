@@ -35,6 +35,19 @@ export default function Home() {
     void refreshDashboard();
   }, []);
 
+  useEffect(() => {
+    const hasActiveIngestion = documents.some((document) => document.status === "UPLOADED" || document.status === "INGESTING");
+    if (!hasActiveIngestion) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      void refreshDashboard();
+    }, 3000);
+
+    return () => window.clearInterval(intervalId);
+  }, [documents]);
+
   async function refreshDashboard() {
     setError("");
     const [healthResponse, documentsResponse, metricsResponse] = await Promise.all([
@@ -69,7 +82,7 @@ export default function Home() {
 
     setIsUploading(true);
     setError("");
-    setStatus("Uploading and ingesting document...");
+    setStatus("Uploading document and queueing ingestion...");
 
     try {
       const formData = new FormData();
@@ -89,7 +102,7 @@ export default function Home() {
 
       setSelectedFile(null);
       setTitle("");
-      setStatus(`Document saved with status ${payload.document.status}.`);
+      setStatus(`Document saved with status ${payload.document.status}. Ingestion will continue in the background.`);
       await refreshDashboard();
     } catch (currentError) {
       setError(currentError instanceof Error ? currentError.message : "Upload failed");
@@ -100,7 +113,7 @@ export default function Home() {
 
   async function reingestDocument(documentId: string) {
     setError("");
-    setStatus("Re-ingesting document...");
+    setStatus("Queueing document re-ingestion...");
     const response = await fetch(`${API_URL}/documents/${documentId}/ingest`, { method: "POST" });
     const payload = await response.json();
 
@@ -109,7 +122,7 @@ export default function Home() {
       return;
     }
 
-    setStatus(`Document status is ${payload.status}.`);
+    setStatus(`Document status is ${payload.status}. Ingestion will continue in the background.`);
     await refreshDashboard();
   }
 
@@ -204,7 +217,7 @@ export default function Home() {
           <section className={styles.panel}>
             <div className={styles.panelHeader}>
               <h2 className={styles.panelTitle}>Documents</h2>
-              <p className={styles.panelCopy}>Upload `.txt`, `.md`, or `.pdf` files. Ingestion stores local embeddings in pgvector.</p>
+              <p className={styles.panelCopy}>Upload `.txt`, `.md`, or `.pdf` files. Background ingestion stores local embeddings in pgvector.</p>
             </div>
 
             <form className={styles.form} onSubmit={uploadDocument}>
@@ -222,7 +235,7 @@ export default function Home() {
                 />
               </label>
               <button className={styles.button} type="submit" disabled={isUploading}>
-                {isUploading ? "Ingesting..." : "Upload and ingest"}
+                {isUploading ? "Queueing..." : "Upload and queue"}
               </button>
             </form>
 
@@ -309,4 +322,3 @@ export default function Home() {
     </main>
   );
 }
-

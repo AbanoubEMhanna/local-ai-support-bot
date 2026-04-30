@@ -12,7 +12,14 @@ vi.mock("@local-ai-support-bot/db", () => ({
     averageRetrievalCount: 0,
     latest: []
   }),
+  createSupportDocument: vi.fn(),
+  getSupportDocument: vi.fn(),
+  updateDocumentIngestionState: vi.fn(),
+  updateSupportDocumentStoragePath: vi.fn(),
+  replaceDocumentChunks: vi.fn(),
+  deleteSupportDocument: vi.fn(),
   listSupportDocuments: vi.fn().mockResolvedValue([]),
+  listDocumentChunks: vi.fn().mockResolvedValue([]),
   searchDocumentChunks: vi.fn().mockResolvedValue([
     {
       documentId: "doc-1",
@@ -109,4 +116,3 @@ describe("API smoke tests", () => {
     expect(response.body.citations).toHaveLength(1);
   });
 });
-

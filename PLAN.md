@@ -41,6 +41,10 @@ All AI features must run through local models using Ollama or LM Studio. No Open
 - [x] `GET /documents/:id/chunks`.
 - [x] Text extraction for `.txt`, `.md`, and `.pdf`.
 - [x] Chunking service for uploaded document text.
+- [x] BullMQ-based background ingestion jobs.
+- [x] Upload returns quickly with status `UPLOADED`.
+- [x] Re-ingestion queues a retryable background job.
+- [x] Ingestion worker progress updates through BullMQ job progress.
 - [x] Local embeddings with Ollama/LM Studio.
 - [x] Store embeddings in PostgreSQL with pgvector.
 - [x] Similarity search over document chunks.
@@ -71,8 +75,8 @@ All AI features must run through local models using Ollama or LM Studio. No Open
 
 ## Remaining Features
 
-- [ ] Replace synchronous ingestion with Redis/BullMQ background jobs.
-- [ ] Add ingestion progress events and retry controls.
+- [ ] Add visible ingestion progress percentages in the dashboard.
+- [ ] Add job retry controls and failed job details in the dashboard.
 - [ ] Add better PDF extraction edge-case handling.
 - [ ] Add workspace/team UI.
 - [ ] Add basic auth.
@@ -104,17 +108,17 @@ All AI features must run through local models using Ollama or LM Studio. No Open
 
 ## Next Milestone
 
-Implement BullMQ-based ingestion:
+Improve ingestion observability:
 
-- Upload returns quickly with status `UPLOADED`.
-- A worker processes extraction, chunking, embedding, and pgvector storage.
-- The web app polls or subscribes to ingestion status.
-- Failed ingestion jobs can be retried from the dashboard.
+- Expose ingestion job progress and attempts through the API.
+- Show progress, attempts, and last failure in the documents dashboard.
+- Add explicit retry controls for failed documents.
+- Add tests for failed jobs and retry behavior.
 
 ## Acceptance Criteria
 
 - A user can upload a Markdown/text/PDF document.
-- The system extracts text, chunks it, embeds it locally, and stores vectors in pgvector.
+- The system queues ingestion, then extracts text, chunks it, embeds it locally, and stores vectors in pgvector.
 - A user can ask a question and receive a grounded answer with citations.
 - The system runs locally with Ollama or LM Studio only.
 - `pnpm typecheck` and `pnpm build` pass.
