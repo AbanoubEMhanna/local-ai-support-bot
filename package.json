@@ -5,9 +5,16 @@
   "packageManager": "pnpm@10.0.0",
   "scripts": {
     "dev": "pnpm -r --parallel dev",
+    "dev:api": "pnpm --filter @local-ai-support-bot/api dev",
+    "dev:web": "pnpm --filter @local-ai-support-bot/web dev",
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "db:generate": "pnpm --filter @local-ai-support-bot/db prisma:generate",
+    "db:migrate": "pnpm --filter @local-ai-support-bot/db prisma:migrate",
+    "db:push": "pnpm --filter @local-ai-support-bot/db prisma:push",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
-    "lint": "pnpm -r lint"
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck"
   }
 }
-

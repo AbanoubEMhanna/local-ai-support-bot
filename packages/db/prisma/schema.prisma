@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Workspace {
+  id            String         @id
+  name          String
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  documents     Document[]
+  conversations Conversation[]
+  aiMetrics     AiMetric[]
+
+  @@map("workspaces")
+}
+
+model Document {
+  id           String          @id @default(cuid())
+  workspaceId  String          @map("workspace_id")
+  title        String
+  filename     String
+  contentType  String          @map("content_type")
+  storagePath  String          @map("storage_path")
+  sizeBytes    Int             @map("size_bytes")
+  rawText      String?         @map("raw_text")
+  status       String          @default("UPLOADED")
+  errorMessage String?         @map("error_message")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+  workspace    Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  chunks       DocumentChunk[]
+
+  @@index([workspaceId])
+  @@index([status])
+  @@map("documents")
+}
+
+model DocumentChunk {
+  id          String   @id
+  documentId  String   @map("document_id")
+  workspaceId String   @map("workspace_id")
+  content     String
+  chunkIndex  Int      @map("chunk_index")
+  tokenCount  Int      @map("token_count")
+  embedding   Unsupported("vector")
+  createdAt   DateTime @default(now()) @map("created_at")
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([workspaceId])
+  @@map("document_chunks")
+}
+
+model Conversation {
+  id          String     @id @default(cuid())
+  workspaceId String     @map("workspace_id")
+  title       String
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  messages    Message[]
+
+  @@index([workspaceId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String       @map("conversation_id")
+  role           String
+  content        String
+  citations      String?
+  createdAt      DateTime     @default(now()) @map("created_at")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@map("messages")
+}
+
+model AiMetric {
+  id             String    @id @default(cuid())
+  workspaceId    String    @map("workspace_id")
+  provider       String
+  model          String
+  latencyMs      Int       @map("latency_ms")
+  retrievalCount Int       @map("retrieval_count")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([createdAt])
+  @@map("ai_metrics")
+}
+

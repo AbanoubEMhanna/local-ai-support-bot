@@ -1,0 +1,311 @@
+.shell {
+  min-height: 100vh;
+  padding: 32px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  max-width: 1240px;
+  margin: 0 auto 24px;
+}
+
+.titleBlock {
+  max-width: 760px;
+}
+
+.title {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+.subtitle {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.statusPanel,
+.panel {
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.statusPanel {
+  min-width: 310px;
+  padding: 16px;
+}
+
+.statusTitle {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.statusList {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.statusRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.statusValue {
+  color: var(--foreground);
+  font-weight: 700;
+  text-align: right;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 460px) minmax(0, 1fr);
+  gap: 24px;
+  max-width: 1240px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.stack {
+  display: grid;
+  gap: 24px;
+}
+
+.panelHeader {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: 18px;
+}
+
+.panelCopy {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.form {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+
+.inlineFields {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--foreground);
+  padding: 11px 12px;
+  outline: none;
+}
+
+.textarea {
+  min-height: 145px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.button,
+.secondaryButton,
+.dangerButton {
+  border: 0;
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-weight: 700;
+}
+
+.button {
+  background: var(--primary);
+  color: white;
+}
+
+.button:hover {
+  background: var(--primary-strong);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.secondaryButton {
+  background: #eef2ff;
+  color: #263b8f;
+}
+
+.dangerButton {
+  background: #fff0ee;
+  color: var(--danger);
+}
+
+.documentList {
+  display: grid;
+  gap: 12px;
+  padding: 0 20px 20px;
+}
+
+.documentItem {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  padding: 14px;
+  background: #fbfcff;
+}
+
+.documentTitle {
+  margin: 0;
+  font-size: 15px;
+}
+
+.documentMeta {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.answer {
+  min-height: 438px;
+  padding: 20px;
+  border-top: 1px solid var(--panel-border);
+}
+
+.answerBox {
+  min-height: 220px;
+  white-space: pre-wrap;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  background: #fbfcff;
+  padding: 16px;
+  line-height: 1.6;
+}
+
+.citations {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.citationsTitle {
+  margin: 0;
+  font-size: 15px;
+}
+
+.citation {
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.citation strong,
+.citation span {
+  display: block;
+}
+
+.citation span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.citation p {
+  margin: 10px 0 0;
+  color: var(--foreground);
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.error {
+  color: var(--danger);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.footerStatus {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  max-width: 1240px;
+  margin: 18px auto 0;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 12px 14px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+@media (max-width: 980px) {
+  .shell {
+    padding: 20px;
+  }
+
+  .header {
+    display: grid;
+  }
+
+  .statusPanel {
+    min-width: 0;
+  }
+
+  .grid,
+  .inlineFields {
+    grid-template-columns: 1fr;
+  }
+}
+

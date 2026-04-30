@@ -4,52 +4,109 @@
 
 Build a local-first support bot SaaS that answers customer questions from uploaded company knowledge such as FAQs, PDFs, Markdown files, and internal docs.
 
+All AI features must run through local models using Ollama or LM Studio. No OpenAI, Anthropic, Gemini, or paid remote AI API is required.
+
 ## Stack
 
-- Web: Next.js, Tailwind CSS, shadcn/ui
+- Web: Next.js
 - API: NestJS
 - DB: PostgreSQL + pgvector
-- Queue/cache: Redis + BullMQ
+- ORM: Prisma
 - AI: Ollama or LM Studio
-- Models: Qwen 3 or Llama 3.1
-- Storage: local disk first, MinIO later
+- Default local model: `llama3.1:8b`
+- Storage: local filesystem under `storage/`
 - Runtime: Docker Compose
 
-## Phase 1 - Foundation
+## Completed Features
 
-- Scaffold `apps/web` with Next.js.
-- Scaffold `apps/api` with NestJS.
-- Add shared TypeScript config and common package conventions.
-- Add Docker Compose for PostgreSQL, pgvector, and Redis.
-- Add health check endpoints and environment config.
+- [x] Monorepo setup using `pnpm workspaces`.
+- [x] Next.js web app in `apps/web`.
+- [x] NestJS API in `apps/api`.
+- [x] Shared contracts in `packages/shared`.
+- [x] Local AI abstraction in `packages/ai`.
+- [x] Ollama chat provider.
+- [x] LM Studio chat provider.
+- [x] Local embedding support through the AI abstraction.
+- [x] Prisma DB package in `packages/db`.
+- [x] PostgreSQL + pgvector schema for workspaces, documents, chunks, conversations, messages, and AI metrics.
+- [x] Automatic idempotent schema application on API startup.
+- [x] Docker Compose for PostgreSQL + pgvector and Redis.
+- [x] `GET /health`.
+- [x] `POST /ai/chat` for direct local model testing.
+- [x] `POST /documents/upload`.
+- [x] `GET /documents`.
+- [x] `GET /documents/:id`.
+- [x] `DELETE /documents/:id`.
+- [x] `POST /documents/:id/ingest`.
+- [x] `GET /documents/:id/chunks`.
+- [x] Text extraction for `.txt`, `.md`, and `.pdf`.
+- [x] Chunking service for uploaded document text.
+- [x] Local embeddings with Ollama/LM Studio.
+- [x] Store embeddings in PostgreSQL with pgvector.
+- [x] Similarity search over document chunks.
+- [x] `POST /chat` RAG endpoint.
+- [x] Answers with citations.
+- [x] Conversation persistence.
+- [x] `GET /conversations`.
+- [x] `GET /conversations/:id`.
+- [x] `GET /metrics/ai`.
+- [x] Documents dashboard in the web app.
+- [x] Upload and ingestion UI.
+- [x] RAG chat UI.
+- [x] Citation display in the web app.
+- [x] Basic AI metrics display.
+- [x] Demo support knowledge document in `docs/demo-support.md`.
+- [x] `pnpm typecheck` passes.
+- [x] `pnpm build` passes.
+- [x] End-to-end local RAG verified with Ollama `llama3.1:8b`.
 
-## Phase 2 - Knowledge Ingestion
+## Remaining Features
 
-- Add document upload from the web app.
-- Parse PDF, Markdown, and plain text documents.
-- Chunk documents and store chunks in PostgreSQL.
-- Generate local embeddings and store them with pgvector.
-- Add ingestion job status using BullMQ.
+- [ ] Replace synchronous ingestion with Redis/BullMQ background jobs.
+- [ ] Add ingestion progress events and retry controls.
+- [ ] Add better PDF extraction edge-case handling.
+- [ ] Add workspace/team UI.
+- [ ] Add basic auth.
+- [ ] Add RBAC: owner/admin/member.
+- [ ] Add document search and filters in the dashboard.
+- [ ] Add conversation picker/history UI.
+- [ ] Add delete conversation endpoint and UI.
+- [ ] Add source preview modal for citations.
+- [ ] Add model/provider settings screen.
+- [ ] Add evaluation dataset for support questions.
+- [ ] Add automated API tests.
+- [ ] Add e2e browser tests.
+- [ ] Add screenshots and demo GIFs for GitHub.
 
-## Phase 3 - Chat Experience
+## Current API
 
-- Add chat endpoint that retrieves relevant chunks.
-- Generate answers through Ollama or LM Studio.
-- Return source citations with each answer.
-- Save conversations and messages.
-- Add admin UI for uploaded documents and chat history.
+- `GET /health`
+- `POST /ai/chat`
+- `POST /documents/upload`
+- `GET /documents`
+- `GET /documents/:id`
+- `DELETE /documents/:id`
+- `POST /documents/:id/ingest`
+- `GET /documents/:id/chunks`
+- `POST /chat`
+- `GET /conversations`
+- `GET /conversations/:id`
+- `GET /metrics/ai`
 
-## Phase 4 - SaaS Polish
+## Next Milestone
 
-- Add auth, workspaces, and basic roles.
-- Add usage analytics and model latency metrics.
-- Add evaluation dataset for common support questions.
-- Add README screenshots and deployment notes.
+Implement BullMQ-based ingestion:
+
+- Upload returns quickly with status `UPLOADED`.
+- A worker processes extraction, chunking, embedding, and pgvector storage.
+- The web app polls or subscribes to ingestion status.
+- Failed ingestion jobs can be retried from the dashboard.
 
 ## Acceptance Criteria
 
-- A user can upload docs, wait for ingestion, and ask questions.
-- Answers include citations from uploaded documents.
-- The system runs locally without OpenAI keys.
-- Docker Compose starts all required services.
+- A user can upload a Markdown/text/PDF document.
+- The system extracts text, chunks it, embeds it locally, and stores vectors in pgvector.
+- A user can ask a question and receive a grounded answer with citations.
+- The system runs locally with Ollama or LM Studio only.
+- `pnpm typecheck` and `pnpm build` pass.
 
