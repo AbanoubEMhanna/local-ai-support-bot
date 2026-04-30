@@ -9,8 +9,8 @@
     "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
     "lint": "tsc -p tsconfig.json --noEmit",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate deploy",
-    "prisma:push": "prisma db push",
+    "prisma:migrate": "DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@localhost:55432/local_ai_support_bot} prisma db execute --schema prisma/schema.prisma --file prisma/schema.sql",
+    "prisma:push": "DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@localhost:55432/local_ai_support_bot} prisma db push",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

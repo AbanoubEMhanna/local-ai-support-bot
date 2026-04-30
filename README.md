@@ -152,6 +152,7 @@ curl http://localhost:4000/chat \
 - `pnpm infra:up`: start local PostgreSQL + Redis.
 - `pnpm infra:down`: stop local infrastructure.
 - `pnpm db:generate`: generate Prisma client.
+- `pnpm db:migrate`: apply the local PostgreSQL/pgvector schema using the default local `DATABASE_URL` when one is not set.
 
 ## Background Ingestion
 
