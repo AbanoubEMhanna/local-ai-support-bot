@@ -11,6 +11,6 @@
 ## Phase 2
 
 - Add conversation history and source citations.
-- Add ingestion progress UI and retry details.
+- Add failed ingestion retry controls and job history details.
 - Add workspace/team support.
 - Add admin dashboard and evaluation dataset.

@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { SupportDocument } from "@local-ai-support-bot/shared";
+import type { DocumentIngestionStatusResponse, SupportDocument } from "@local-ai-support-bot/shared";
 import { DocumentsService } from "./documents.service";
 import type { DocumentIngestionQueue } from "./document-ingestion.queue";
 
@@ -42,14 +42,27 @@ function supportDocument(overrides: Partial<SupportDocument> = {}): SupportDocum
 
 describe("DocumentsService queued ingestion", () => {
   let storageDir: string;
-  let queue: Pick<DocumentIngestionQueue, "enqueueDocumentIngestion">;
+  let queue: Pick<DocumentIngestionQueue, "enqueueDocumentIngestion" | "getDocumentIngestionStatus">;
 
   beforeEach(async () => {
     vi.clearAllMocks();
     storageDir = await mkdtemp(join(tmpdir(), "local-ai-support-bot-"));
     process.env.STORAGE_DIR = storageDir;
     queue = {
-      enqueueDocumentIngestion: vi.fn().mockResolvedValue({ queued: true, jobId: "job-1" })
+      enqueueDocumentIngestion: vi.fn().mockResolvedValue({ queued: true, jobId: "job-1" }),
+      getDocumentIngestionStatus: vi.fn().mockResolvedValue({
+        documentId: "doc-1",
+        queueEnabled: true,
+        jobId: "job-1",
+        state: "active",
+        progress: 45,
+        attemptsMade: 1,
+        attemptsTotal: 3,
+        failedReason: null,
+        queuedAt: "2026-01-01T00:00:00.000Z",
+        processedAt: "2026-01-01T00:00:01.000Z",
+        finishedAt: null
+      } satisfies DocumentIngestionStatusResponse)
     };
   });
 
@@ -125,5 +138,27 @@ describe("DocumentsService queued ingestion", () => {
       errorMessage: null
     });
     expect(progress).toContain(100);
+  });
+
+  it("returns current ingestion job status for an existing document", async () => {
+    dbMock.getSupportDocument.mockResolvedValue({
+      ...supportDocument({ status: "INGESTING" }),
+      storagePath: "/tmp/doc.md",
+      rawText: null
+    });
+
+    const service = new DocumentsService(queue as DocumentIngestionQueue);
+    const response = await service.getIngestionStatus("doc-1");
+
+    expect(response).toMatchObject({
+      documentId: "doc-1",
+      queueEnabled: true,
+      jobId: "job-1",
+      state: "active",
+      progress: 45,
+      attemptsMade: 1,
+      attemptsTotal: 3
+    });
+    expect(queue.getDocumentIngestionStatus).toHaveBeenCalledWith("doc-1");
   });
 });
