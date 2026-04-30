@@ -45,6 +45,7 @@ All AI features must run through local models using Ollama or LM Studio. No Open
 - [x] Upload returns quickly with status `UPLOADED`.
 - [x] Re-ingestion queues a retryable background job.
 - [x] Ingestion worker progress updates through BullMQ job progress.
+- [x] `GET /documents/:id/ingestion` exposes queue status, progress, attempts, and failure reason.
 - [x] Local embeddings with Ollama/LM Studio.
 - [x] Store embeddings in PostgreSQL with pgvector.
 - [x] Similarity search over document chunks.
@@ -56,6 +57,7 @@ All AI features must run through local models using Ollama or LM Studio. No Open
 - [x] `GET /metrics/ai`.
 - [x] Documents dashboard in the web app.
 - [x] Upload and ingestion UI.
+- [x] Ingestion progress and attempts display in the web app.
 - [x] RAG chat UI.
 - [x] Citation display in the web app.
 - [x] Basic AI metrics display.
@@ -75,8 +77,8 @@ All AI features must run through local models using Ollama or LM Studio. No Open
 
 ## Remaining Features
 
-- [ ] Add visible ingestion progress percentages in the dashboard.
-- [ ] Add job retry controls and failed job details in the dashboard.
+- [ ] Add explicit retry controls for failed BullMQ jobs.
+- [ ] Add richer failed job details and history in the dashboard.
 - [ ] Add better PDF extraction edge-case handling.
 - [ ] Add workspace/team UI.
 - [ ] Add basic auth.
@@ -101,6 +103,7 @@ All AI features must run through local models using Ollama or LM Studio. No Open
 - `DELETE /documents/:id`
 - `POST /documents/:id/ingest`
 - `GET /documents/:id/chunks`
+- `GET /documents/:id/ingestion`
 - `POST /chat`
 - `GET /conversations`
 - `GET /conversations/:id`
@@ -108,12 +111,11 @@ All AI features must run through local models using Ollama or LM Studio. No Open
 
 ## Next Milestone
 
-Improve ingestion observability:
+Improve failed ingestion recovery:
 
-- Expose ingestion job progress and attempts through the API.
-- Show progress, attempts, and last failure in the documents dashboard.
 - Add explicit retry controls for failed documents.
 - Add tests for failed jobs and retry behavior.
+- Add failed job history and last error details in the documents dashboard.
 
 ## Acceptance Criteria
 

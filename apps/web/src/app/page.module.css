@@ -206,6 +206,42 @@
   line-height: 1.45;
 }
 
+.ingestionStatus {
+  display: grid;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.ingestionHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.ingestionHeader span:first-child {
+  color: var(--foreground);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.progressTrack {
+  position: relative;
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e5e7eb;
+}
+
+.progressBar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: var(--primary);
+}
+
 .actions {
   display: flex;
   gap: 8px;
@@ -308,4 +344,3 @@
     grid-template-columns: 1fr;
   }
 }
-

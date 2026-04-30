@@ -1,6 +1,6 @@
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { extname, join, resolve } from "node:path";
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { createAiClient, loadAiConfig } from "@local-ai-support-bot/ai";
 import {
   createSupportDocument,
@@ -12,7 +12,13 @@ import {
   updateDocumentIngestionState,
   updateSupportDocumentStoragePath
 } from "@local-ai-support-bot/db";
-import type { GetDocumentChunksResponse, ListDocumentsResponse, SupportDocument, UploadDocumentResponse } from "@local-ai-support-bot/shared";
+import type {
+  DocumentIngestionStatusResponse,
+  GetDocumentChunksResponse,
+  ListDocumentsResponse,
+  SupportDocument,
+  UploadDocumentResponse
+} from "@local-ai-support-bot/shared";
 import { DocumentIngestionQueue } from "./document-ingestion.queue";
 import { assertSupportedDocumentFile, chunkText, extractTextFromFile } from "./text-extraction";
 
@@ -20,7 +26,7 @@ import { assertSupportedDocumentFile, chunkText, extractTextFromFile } from "./t
 export class DocumentsService {
   private readonly storageDir = process.env.STORAGE_DIR ? resolve(process.env.STORAGE_DIR) : resolve(process.cwd(), "../..", "storage");
 
-  constructor(private readonly ingestionQueue: DocumentIngestionQueue) {}
+  constructor(@Inject(DocumentIngestionQueue) private readonly ingestionQueue: DocumentIngestionQueue) {}
 
   async upload(file: Express.Multer.File, title?: string): Promise<UploadDocumentResponse> {
     if (!file) {
@@ -63,6 +69,11 @@ export class DocumentsService {
   async getChunks(id: string): Promise<GetDocumentChunksResponse> {
     await this.get(id);
     return { chunks: await listDocumentChunks(id) };
+  }
+
+  async getIngestionStatus(id: string): Promise<DocumentIngestionStatusResponse> {
+    await this.get(id);
+    return this.ingestionQueue.getDocumentIngestionStatus(id);
   }
 
   async remove(id: string): Promise<void> {

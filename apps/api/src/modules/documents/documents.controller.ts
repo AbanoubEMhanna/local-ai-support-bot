@@ -1,6 +1,12 @@
 import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import type { GetDocumentChunksResponse, ListDocumentsResponse, SupportDocument, UploadDocumentResponse } from "@local-ai-support-bot/shared";
+import type {
+  DocumentIngestionStatusResponse,
+  GetDocumentChunksResponse,
+  ListDocumentsResponse,
+  SupportDocument,
+  UploadDocumentResponse
+} from "@local-ai-support-bot/shared";
 import { DocumentsService } from "./documents.service";
 
 @Controller("documents")
@@ -26,6 +32,11 @@ export class DocumentsController {
   @Get(":id/chunks")
   chunks(@Param("id") id: string): Promise<GetDocumentChunksResponse> {
     return this.documentsService.getChunks(id);
+  }
+
+  @Get(":id/ingestion")
+  ingestion(@Param("id") id: string): Promise<DocumentIngestionStatusResponse> {
+    return this.documentsService.getIngestionStatus(id);
   }
 
   @Post(":id/ingest")

@@ -160,7 +160,9 @@ Document ingestion runs through BullMQ and Redis:
 - `POST /documents/upload` saves the file locally and queues ingestion.
 - The API worker extracts text, chunks content, calls the configured local embedding provider, and writes vectors to pgvector.
 - `POST /documents/:id/ingest` queues re-ingestion for an existing document.
+- `GET /documents/:id/ingestion` returns queue state, progress, attempts, and failure reason.
 - Document status moves through `UPLOADED`, `INGESTING`, `READY`, or `FAILED`.
+- The web dashboard polls active ingestion jobs and displays progress and attempts per document.
 - Tests disable the queue worker and mock AI calls, so CI does not require Redis, Ollama, or LM Studio.
 
 ## Testing and CI
@@ -187,7 +189,7 @@ Tests mock AI network calls where needed, so CI does not require Ollama, LM Stud
 - Phase 1: Scaffold Next.js, NestJS, PostgreSQL, pgvector, Redis. Done.
 - Phase 2: Implement document upload, parsing, chunking, and embeddings. Done.
 - Phase 3: Add RAG chat with citations and conversation history. Done.
-- Phase 4: Add ingestion progress UI, auth, workspaces, RBAC, and evaluation datasets.
+- Phase 4: Add failed job retry controls, auth, workspaces, RBAC, and evaluation datasets.
 
 ## Repository Status
 

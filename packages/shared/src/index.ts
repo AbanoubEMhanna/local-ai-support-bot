@@ -66,6 +66,20 @@ export interface GetDocumentChunksResponse {
   chunks: DocumentChunk[];
 }
 
+export interface DocumentIngestionStatusResponse {
+  documentId: string;
+  queueEnabled: boolean;
+  jobId: string | null;
+  state: "disabled" | "unknown" | "waiting" | "active" | "delayed" | "completed" | "failed";
+  progress: number;
+  attemptsMade: number;
+  attemptsTotal: number;
+  failedReason?: string | null;
+  queuedAt?: string | null;
+  processedAt?: string | null;
+  finishedAt?: string | null;
+}
+
 export interface Citation {
   documentId: string;
   documentTitle: string;

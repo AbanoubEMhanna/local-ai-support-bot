@@ -5,6 +5,7 @@ import type {
   AiMetricsResponse,
   AiProvider,
   Citation,
+  DocumentIngestionStatusResponse,
   HealthResponse,
   ListDocumentsResponse,
   RagChatResponse,
@@ -18,6 +19,7 @@ export default function Home() {
   const [provider, setProvider] = useState<AiProvider>("ollama");
   const [model, setModel] = useState("llama3.1:8b");
   const [documents, setDocuments] = useState<SupportDocument[]>([]);
+  const [ingestionStatuses, setIngestionStatuses] = useState<Record<string, DocumentIngestionStatusResponse>>({});
   const [metrics, setMetrics] = useState<AiMetricsResponse | null>(null);
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -66,11 +68,33 @@ export default function Home() {
     if (documentsResponse.ok) {
       const payload = (await documentsResponse.json()) as ListDocumentsResponse;
       setDocuments(payload.documents);
+      await refreshIngestionStatuses(payload.documents);
     }
 
     if (metricsResponse.ok) {
       setMetrics((await metricsResponse.json()) as AiMetricsResponse);
     }
+  }
+
+  async function refreshIngestionStatuses(currentDocuments: SupportDocument[]) {
+    if (currentDocuments.length === 0) {
+      setIngestionStatuses({});
+      return;
+    }
+
+    const statusEntries = await Promise.all(
+      currentDocuments.map(async (document) => {
+        const response = await fetch(`${API_URL}/documents/${document.id}/ingestion`).catch(() => null);
+        if (!response?.ok) {
+          return null;
+        }
+
+        const payload = (await response.json()) as DocumentIngestionStatusResponse;
+        return [document.id, payload] as const;
+      })
+    );
+
+    setIngestionStatuses(Object.fromEntries(statusEntries.filter(Boolean) as Array<readonly [string, DocumentIngestionStatusResponse]>));
   }
 
   async function uploadDocument(event: FormEvent<HTMLFormElement>) {
@@ -248,6 +272,7 @@ export default function Home() {
                     <p className={styles.documentMeta}>
                       {document.status} · {document.chunkCount} chunks · {document.filename}
                     </p>
+                    <IngestionStatus document={document} status={ingestionStatuses[document.id]} />
                     {document.errorMessage ? <p className={styles.error}>{document.errorMessage}</p> : null}
                   </div>
                   <div className={styles.actions}>
@@ -320,5 +345,28 @@ export default function Home() {
         </footer>
       ) : null}
     </main>
+  );
+}
+
+function IngestionStatus({ document, status }: { document: SupportDocument; status?: DocumentIngestionStatusResponse }) {
+  if (!status && document.status !== "UPLOADED" && document.status !== "INGESTING") {
+    return null;
+  }
+
+  const progress = status?.progress ?? (document.status === "READY" ? 100 : 0);
+  const state = status?.state ?? document.status.toLowerCase();
+  const attempts = status ? `${status.attemptsMade}/${status.attemptsTotal}` : "0/0";
+
+  return (
+    <div className={styles.ingestionStatus}>
+      <div className={styles.ingestionHeader}>
+        <span>{state}</span>
+        <span>{progress}% · attempts {attempts}</span>
+      </div>
+      <div className={styles.progressTrack} aria-label={`Ingestion progress ${progress}%`}>
+        <span className={styles.progressBar} style={{ width: `${Math.max(0, Math.min(100, progress))}%` }} />
+      </div>
+      {status?.failedReason ? <p className={styles.error}>{status.failedReason}</p> : null}
+    </div>
   );
 }
