@@ -142,9 +142,32 @@ curl http://localhost:4000/chat \
 - `pnpm dev:web`: run the Next.js app on port `3000`.
 - `pnpm build`: build all workspace projects.
 - `pnpm typecheck`: typecheck all workspace projects.
+- `pnpm test`: run Vitest unit, API, and DB tests.
+- `pnpm test:watch`: run Vitest in watch mode.
+- `pnpm run ci`: run the local CI pipeline: Prisma generate, typecheck, tests, and build.
+- `pnpm verify`: alias for `pnpm run ci`.
 - `pnpm infra:up`: start local PostgreSQL + Redis.
 - `pnpm infra:down`: stop local infrastructure.
 - `pnpm db:generate`: generate Prisma client.
+
+## Testing and CI
+
+The project has a local-first test pipeline:
+
+- Vitest unit tests for AI provider config, local model request payloads, text extraction, and chunking.
+- NestJS/Supertest smoke tests for health, documents, metrics, and RAG chat endpoints.
+- PostgreSQL + pgvector integration tests for documents, chunks, vector search, conversations, and AI metrics.
+- GitHub Actions workflow in `.github/workflows/ci.yml`.
+- Husky `pre-push` hook that runs `pnpm run ci` before code is pushed.
+
+For local pre-push checks, make sure Docker services are running:
+
+```bash
+pnpm infra:up
+pnpm run ci
+```
+
+Tests mock AI network calls where needed, so CI does not require Ollama, LM Studio, or any paid AI API.
 
 ## Roadmap
 

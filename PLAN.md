@@ -56,7 +56,16 @@ All AI features must run through local models using Ollama or LM Studio. No Open
 - [x] Citation display in the web app.
 - [x] Basic AI metrics display.
 - [x] Demo support knowledge document in `docs/demo-support.md`.
+- [x] Vitest test runner.
+- [x] AI provider unit tests with mocked `fetch`.
+- [x] Document extraction and chunking tests.
+- [x] NestJS/Supertest API smoke tests.
+- [x] PostgreSQL + pgvector DB integration tests.
+- [x] GitHub Actions CI workflow.
+- [x] Husky `pre-push` hook.
+- [x] Local CI pipeline script: `pnpm run ci`.
 - [x] `pnpm typecheck` passes.
+- [x] `pnpm test` passes.
 - [x] `pnpm build` passes.
 - [x] End-to-end local RAG verified with Ollama `llama3.1:8b`.
 
@@ -74,7 +83,7 @@ All AI features must run through local models using Ollama or LM Studio. No Open
 - [ ] Add source preview modal for citations.
 - [ ] Add model/provider settings screen.
 - [ ] Add evaluation dataset for support questions.
-- [ ] Add automated API tests.
+- [ ] Add broader API tests for upload failures, delete, re-ingest, and conversation detail.
 - [ ] Add e2e browser tests.
 - [ ] Add screenshots and demo GIFs for GitHub.
 
@@ -109,4 +118,3 @@ Implement BullMQ-based ingestion:
 - A user can ask a question and receive a grounded answer with citations.
 - The system runs locally with Ollama or LM Studio only.
 - `pnpm typecheck` and `pnpm build` pass.
-

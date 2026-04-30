@@ -13,8 +13,19 @@
     "db:migrate": "pnpm --filter @local-ai-support-bot/db prisma:migrate",
     "db:push": "pnpm --filter @local-ai-support-bot/db prisma:push",
     "build": "pnpm -r build",
-    "test": "pnpm -r test",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "ci": "pnpm db:generate && pnpm typecheck && pnpm test && pnpm build",
+    "verify": "pnpm run ci",
     "lint": "pnpm -r lint",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "^11.0.0",
+    "@types/supertest": "^6.0.2",
+    "husky": "^9.1.7",
+    "supertest": "^7.0.0",
+    "vitest": "^3.0.0"
   }
 }
