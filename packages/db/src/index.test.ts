@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Citation } from "@local-ai-support-bot/shared";
 
 let db: typeof import("./index");
@@ -9,6 +9,10 @@ beforeAll(async () => {
   process.env.DEFAULT_WORKSPACE_ID = `test-${randomUUID()}`;
   db = await import("./index");
   await db.applyDatabaseSchema();
+});
+
+afterAll(async () => {
+  await db.disconnectPrismaClient();
 });
 
 describe("database integration", () => {
@@ -93,4 +97,3 @@ describe("database integration", () => {
     expect(metrics.latest[0]).toMatchObject({ provider: "ollama", model: "llama3.1:8b" });
   });
 });
-

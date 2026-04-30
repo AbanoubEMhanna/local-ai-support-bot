@@ -26,6 +26,9 @@ jobs:
           --health-retries 5
 
     env:
+      CI: true
+      NEXT_TELEMETRY_DISABLED: 1
+      PRISMA_HIDE_UPDATE_MESSAGE: true
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/local_ai_support_bot_test
       DEFAULT_WORKSPACE_ID: ci-workspace
       AI_PROVIDER: ollama
@@ -50,5 +53,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run CI pipeline
-        run: pnpm run ci
+      - name: Generate Prisma client
+        run: pnpm db:generate
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
